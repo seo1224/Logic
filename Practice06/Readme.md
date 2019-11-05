@@ -18,8 +18,15 @@
 
 ## 결과
  ### **Top Module 의 DUT/TestBench Code 및 Waveform 검증**
+![](https://github.com/jiwonryu/Logic/blob/master/Practice06/Practice06%20wave%EC%BA%A1%EC%B3%90.png)
 
 ### **FPGA 동작 사진 (3개- 일반, Q1, Q2)**
+![](https://github.com/jiwonryu/Logic/blob/master/Practice06/FPGA_%EC%9D%BC%EB%B0%98_1.jpg)
+![](https://github.com/jiwonryu/Logic/blob/master/Practice06/FPGA_%EC%9D%BC%EB%B0%98_2.jpg)
+![](https://github.com/jiwonryu/Logic/blob/master/Practice06/FPGA_Q1_1.jpg)
+![](https://github.com/jiwonryu/Logic/blob/master/Practice06/FPGA_Q1_2.jpg)
+![](https://github.com/jiwonryu/Logic/blob/master/Practice06/FPGA_Q2_1.jpg)
+![](https://github.com/jiwonryu/Logic/blob/master/Practice06/FPGA_Q2_2.jpg)
 
 <!--stackedit_data:
 eyJoaXN0b3J5IjpbLTIwMDgzMTA0MjgsMzYwMjU1MTQ0XX0=
