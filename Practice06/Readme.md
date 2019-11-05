@@ -29,5 +29,6 @@
 ![](https://github.com/jiwonryu/Logic/blob/master/Practice06/FPGA_Q2_2.jpg)
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTIwMDgzMTA0MjgsMzYwMjU1MTQ0XX0=
+eyJoaXN0b3J5IjpbNzMyNDQxODAsLTIwMDgzMTA0MjgsMzYwMj
+U1MTQ0XX0=
 -->
