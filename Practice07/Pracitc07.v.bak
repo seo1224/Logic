@@ -580,7 +580,7 @@ debounce	u0_debounce(
 
 		.o_sw		( sw0		),
 
-		.i_sw		( i_sw0		),
+		.i_sw		( sw0		),
 
 		.clk		( clk_100hz	));
 
@@ -592,7 +592,7 @@ debounce	u1_debounce(
 
 		.o_sw		( sw1		),
 
-		.i_sw		( i_sw1		),
+		.i_sw		( sw1		),
 
 		.clk		( clk_100hz	));
 
@@ -604,7 +604,7 @@ debounce	u2_debounce(
 
 		.o_sw		( sw2		),
 
-		.i_sw		( i_sw2		),
+		.i_sw		( sw2		),
 
 		.clk		( clk_100hz	));
 
@@ -682,7 +682,7 @@ always @(*) begin
 
 				POS_SEC : begin
 
-					o_sec_clk = ~i_sw2;
+					o_sec_clk = ~sw2;
 
 					o_min_clk = 1'b0;
 
@@ -692,7 +692,7 @@ always @(*) begin
 
 					o_sec_clk = 1'b0;
 
-					o_min_clk = ~i_sw2;
+					o_min_clk = ~sw2;
 
 				end
 

@@ -592,7 +592,7 @@ debounce	u1_debounce(
 
 		.o_sw		( sw1		),
 
-		.i_sw		( sw1		),
+		.i_sw		( i_sw1		),
 
 		.clk		( clk_100hz	));
 
@@ -604,7 +604,7 @@ debounce	u2_debounce(
 
 		.o_sw		( sw2		),
 
-		.i_sw		( sw2		),
+		.i_sw		( i_sw2		),
 
 		.clk		( clk_100hz	));
 
@@ -612,7 +612,7 @@ debounce	u2_debounce(
 
 reg		o_mode			;
 
-always @(posedge i_sw0 or negedge rst_n) begin
+always @(posedge sw0 or negedge rst_n) begin
 
 	if(rst_n == 1'b0) begin
 
@@ -630,7 +630,7 @@ end
 
 reg		o_position		;
 
-always @(posedge i_sw1 or negedge rst_n) begin
+always @(posedge sw1 or negedge rst_n) begin
 
 	if(rst_n == 1'b0) begin
 
