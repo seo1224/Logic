@@ -580,7 +580,7 @@ debounce	u0_debounce(
 
 		.o_sw		( sw0		),
 
-		.i_sw		( sw0		),
+		.i_sw		( i_sw0		),
 
 		.clk		( clk_100hz	));
 
