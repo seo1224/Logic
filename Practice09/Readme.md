@@ -7,5 +7,6 @@
 4. seq_rx가 01이면 (즉, 상승edge 일때) cnt32가 증가
 5. cnt 32가 32가 되면 complete
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMzkwODU5NTQzLDQ2NDQxNzExMV19
+eyJoaXN0b3J5IjpbMTgzODg4NDE4MywzOTA4NTk1NDMsNDY0ND
+E3MTExXX0=
 -->
