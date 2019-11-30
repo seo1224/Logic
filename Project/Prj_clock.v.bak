@@ -457,7 +457,7 @@ endmodule
 //	--------------------------------------------------
 //	HMS(Hour:Min:Sec) Counter
 //	--------------------------------------------------
-module	hrminsec(	
+module	minsec(	
 		o_sec,
 		o_min,
 		o_hour,
@@ -742,13 +742,13 @@ controller		u_ctrl(
 			.o_sec_clk		(controller_2	),
 			.rst_n			(rst_n		));
 
-wire	[5:0]	hrminsec_1	;
-wire	[5:0]	hrminsec_2	;
-wire	[5:0]	hrminsec_3	;
+wire	[5:0]	minsec_1	;
+wire	[5:0]	minsec_2	;
+wire	[5:0]	minsec_3	;
 
 wire		alarm		;
 
-minsec			u_hrminsec(
+minsec			u_minsec(
 			.clk			(clk		),
 			.i_hour_clk		(controller_6	),
 			.i_min_clk		(controller_1	),
@@ -760,9 +760,9 @@ minsec			u_hrminsec(
 			.i_alarm_min_clk	(alarm_min_clk	),
 			.i_alarm_sec_clk	(alarm_sec_clk	),
 			.o_alarm		(alarm		),
-			.o_hour			(hrminsec_3	),
-			.o_min			(hrminsec_1	),
-			.o_sec			(hrminsec_2	),
+			.o_hour			(minsec_3	),
+			.o_min			(minsec_1	),
+			.o_sec			(minsec_2	),
 			.o_max_hit_hour		(controller_5	),
 			.o_max_hit_min		(controller_3	),
 			.o_max_hit_sec		(controller_4	),
@@ -780,7 +780,7 @@ wire	[3:0]	left_1	;
 wire	[3:0]	right_1	;
 
 double_fig_sep		u0_dfs(
-			.i_double_fig	(hrminsec_2	),
+			.i_double_fig	(minsec_2	),
 			.o_left		(left_1		),
 			.o_right	(right_1	));
 
@@ -790,7 +790,7 @@ wire	[3:0]	left_2	;
 wire	[3:0]	right_2	;
 
 double_fig_sep		u1_dfs(
-			.i_double_fig	(hrminsec_1	),
+			.i_double_fig	(minsec_1	),
 			.o_left		(left_2		),
 			.o_right	(right_2	));
 
