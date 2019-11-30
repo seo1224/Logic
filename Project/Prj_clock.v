@@ -104,7 +104,6 @@ module	led_disp(
 		o_seg_dp,
 		o_seg_enb,
 		i_six_digit_seg,
-		i_six_dp,
 		i_mode,
 		i_position,
 		clk,
@@ -115,7 +114,6 @@ output		o_seg_dp		;
 output	[6:0]	o_seg			;
 
 input	[41:0]	i_six_digit_seg		;
-input	[5:0]	i_six_dp		;
 input		clk			;
 input		rst_n			;
 input	[1:0]	i_position		;
@@ -260,6 +258,7 @@ always @(i_position, i_mode, cnt_sec, cnt_min, cnt_hr, cnt_common_node) begin
 end
 		
 reg		o_seg_dp		;
+reg	[5:0]	i_six_dp		;
 
 always @(cnt_common_node, i_six_dp) begin
 	case (cnt_common_node)
@@ -272,6 +271,21 @@ always @(cnt_common_node, i_six_dp) begin
 		default:o_seg_dp = 1'b0;
 	endcase
 end
+//how 'i_six_dp' is shown to 'o_seg_dp'??
+
+always @(i_mode, i_position) begin
+	if((i_mode==2'b01)||(i_mode==2'b10))begin // if mode is 'setup' or 'alarm'
+		case(i_position)
+		2'b00: 	i_six_dp = 6'b000001	;
+		2'b01: 	i_six_dp = 6'b000100	;
+		2'b10: 	i_six_dp = 6'b010000	;
+		default:i_six_dp = 6'b000000	;	
+		endcase
+	end else begin
+		i_six_dp = 6'b000000		;
+	end
+end 
+
 
 reg	[6:0]	o_seg			;
 
@@ -962,7 +976,6 @@ led_disp	u_led_disp(
 				.i_mode		(mode		),	
 				.i_position	(position	),
 				.i_six_digit_seg(six_digit_seg	),
-				.i_six_dp	(6'b0		),
 				.clk		(clk		),
 				.rst_n		(rst_n		));
 
