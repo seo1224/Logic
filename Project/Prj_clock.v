@@ -105,6 +105,8 @@ module	led_disp(
 		o_seg_enb,
 		i_six_digit_seg,
 		i_six_dp,
+		i_mode,
+		i_position,
 		clk,
 		rst_n);
 
@@ -116,6 +118,8 @@ input	[41:0]	i_six_digit_seg		;
 input	[5:0]	i_six_dp		;
 input		clk			;
 input		rst_n			;
+input	[1:0]	i_position		;
+input	[1:0]	i_mode			;
 
 wire		gen_clk		;
 
@@ -126,7 +130,22 @@ nco		u_nco(
 		.rst_n		( rst_n		));
 
 
+wire 		clk_blink	;
+
+nco		u1_nco(
+		.o_gen_clk	( clk_blink	),
+		.i_nco_num	( 32'd5000000   ),
+		.clk		( clk		),
+		.rst_n		( rst_n		));
+
+
+
 reg	[3:0]	cnt_common_node	;
+reg		cnt_hr		; //count hr (blink: on/off repeat)
+reg		cnt_min		; //count min(blink: on/off repeat)
+reg		cnt_sec		; //count sec(blink)
+
+
 
 always @(posedge gen_clk or negedge rst_n) begin
 	if(rst_n == 1'b0) begin
@@ -140,23 +159,109 @@ always @(posedge gen_clk or negedge rst_n) begin
 	end
 end
 
-reg	[5:0]	o_seg_enb		;
-
-always @(cnt_common_node) begin
-	case (cnt_common_node)
-		4'd0:	o_seg_enb = 6'b111110;
-		4'd1:	o_seg_enb = 6'b111101;
-		4'd2:	o_seg_enb = 6'b111011;
-		4'd3:	o_seg_enb = 6'b110111;
-		4'd4:	o_seg_enb = 6'b101111;
-		4'd5:	o_seg_enb = 6'b011111;
-		default:o_seg_enb = 6'b111111;
-	endcase
+always @(posedge clk_blink or negedge rst_n) begin
+	if(rst_n ==1'b0) begin
+		cnt_hr = 0;
+		cnt_min= 0;
+		cnt_sec= 0;
+	end else begin
+		cnt_hr <= cnt_hr + 1'b1; // count hr  repeat (blink)
+		cnt_min<= cnt_min+ 1'b1; // count min repeat (blink)
+		cnt_sec<= cnt_sec+ 1'b1; // count sec repaet (blink)
+	end
 end
 
+reg	[5:0]	o_seg_enb		;
+
+always @(i_position, i_mode, cnt_sec, cnt_min, cnt_hr, cnt_common_node) begin
+	if((i_mode==2'b01)||(i_mode==2'b10)) begin // if mode is 'setup' or 'alarm'
+		case(i_position) 
+		2'b00: begin//position is sec
+			if (cnt_sec == 1'b0) begin //count set off
+				case (cnt_common_node)
+					4'd0:	o_seg_enb = 6'b111111;
+					4'd1:	o_seg_enb = 6'b111111;
+					4'd2:	o_seg_enb = 6'b111011;
+					4'd3:	o_seg_enb = 6'b110111;
+					4'd4:	o_seg_enb = 6'b101111;
+					4'd5:	o_seg_enb = 6'b011111;
+					default:o_seg_enb = 6'b111111;
+				endcase
+			end else begin
+				case (cnt_common_node)
+					4'd0:	o_seg_enb = 6'b111110;
+					4'd1:	o_seg_enb = 6'b111101;
+					4'd2:	o_seg_enb = 6'b111011;
+					4'd3:	o_seg_enb = 6'b110111;
+					4'd4:	o_seg_enb = 6'b101111;
+					4'd5:	o_seg_enb = 6'b011111;
+					default:o_seg_enb = 6'b111111;
+				endcase
+			end
+		end
+		2'b01: begin
+			if (cnt_min == 1'b0) begin
+				case (cnt_common_node)
+					4'd0:	o_seg_enb = 6'b111110;
+					4'd1:	o_seg_enb = 6'b111101;
+					4'd2:	o_seg_enb = 6'b111111;
+					4'd3:	o_seg_enb = 6'b111111;
+					4'd4:	o_seg_enb = 6'b101111;
+					4'd5:	o_seg_enb = 6'b011111;
+					default:o_seg_enb = 6'b111111;
+				endcase
+			end else begin
+				case (cnt_common_node)
+					4'd0:	o_seg_enb = 6'b111110;
+					4'd1:	o_seg_enb = 6'b111101;
+					4'd2:	o_seg_enb = 6'b111011;
+					4'd3:	o_seg_enb = 6'b110111;
+					4'd4:	o_seg_enb = 6'b101111;
+					4'd5:	o_seg_enb = 6'b011111;
+					default:o_seg_enb = 6'b111111;
+				endcase
+			end
+		end
+		2'b10: begin
+			if (cnt_hr == 1'b0) begin
+				case (cnt_common_node)
+					4'd0:	o_seg_enb = 6'b111110;
+					4'd1:	o_seg_enb = 6'b111101;
+					4'd2:	o_seg_enb = 6'b111011;
+					4'd3:	o_seg_enb = 6'b110111;
+					4'd4:	o_seg_enb = 6'b111111;
+					4'd5:	o_seg_enb = 6'b111111;
+					default:o_seg_enb = 6'b111111;
+				endcase
+			end else begin
+				case (cnt_common_node)
+					4'd0:	o_seg_enb = 6'b111110;
+					4'd1:	o_seg_enb = 6'b111101;
+					4'd2:	o_seg_enb = 6'b111011;
+					4'd3:	o_seg_enb = 6'b110111;
+					4'd4:	o_seg_enb = 6'b101111;
+					4'd5:	o_seg_enb = 6'b011111;
+					default:o_seg_enb = 6'b111111;
+				endcase		
+			end
+		end	
+		endcase
+	end else begin
+		case (cnt_common_node)
+			4'd0:	o_seg_enb = 6'b111110;
+			4'd1:	o_seg_enb = 6'b111101;
+			4'd2:	o_seg_enb = 6'b111011;
+			4'd3:	o_seg_enb = 6'b110111;
+			4'd4:	o_seg_enb = 6'b101111;
+			4'd5:	o_seg_enb = 6'b011111;
+			default:o_seg_enb = 6'b111111;
+		endcase
+	end
+end
+		
 reg		o_seg_dp		;
 
-always @(cnt_common_node) begin
+always @(cnt_common_node, i_six_dp) begin
 	case (cnt_common_node)
 		4'd0:	o_seg_dp = i_six_dp[0];
 		4'd1:	o_seg_dp = i_six_dp[1];
@@ -170,7 +275,7 @@ end
 
 reg	[6:0]	o_seg			;
 
-always @(cnt_common_node) begin
+always @(cnt_common_node, i_six_digit_seg) begin
 	case (cnt_common_node)
 		4'd0:	o_seg = i_six_digit_seg[6:0];
 		4'd1:	o_seg = i_six_digit_seg[13:7];
@@ -748,7 +853,7 @@ wire	[5:0]	hrminsec_3	;
 
 wire		alarm		;
 
-minsec			u_hrminsec(
+hrminsec		u_hrminsec(
 			.clk			(clk		),
 			.i_hour_clk		(controller_6	),
 			.i_min_clk		(controller_1	),
@@ -800,7 +905,7 @@ wire	[3:0]	left_3	;
 wire	[3:0]	right_3	;
 
 double_fig_sep		u2_dfs(
-			.i_double_fig	(minsec_3	),
+			.i_double_fig	(hrminsec_3	),
 			.o_left		(left_3		),
 			.o_right	(right_3	));
 
@@ -849,10 +954,13 @@ wire	[41:0]	six_digit_seg		;
 
 assign		six_digit_seg ={ hour_left, hour_right, min_left, min_right, sec_left, sec_right };
 
+
 led_disp	u_led_disp(
 				.o_seg		(o_seg		),
 				.o_seg_dp	(o_seg_dp	),
 				.o_seg_enb	(o_seg_enb	),
+				.i_mode		(mode		),	
+				.i_position	(position	),
 				.i_six_digit_seg(six_digit_seg	),
 				.i_six_dp	(6'b0		),
 				.clk		(clk		),
