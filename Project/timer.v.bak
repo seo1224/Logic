@@ -16,7 +16,7 @@
 //	Numerical Controlled Oscillator
 //	Hz of o_gen_clk = Clock Hz / num
 //	--------------------------------------------------
-module	nco(	      
+module	nco(	      //??? ?? 
 		o_gen_clk,
 		i_nco_num,
 		clk,
@@ -252,19 +252,16 @@ module	controller(
 		o_mode,
 		o_position,
 		o_alarm_en,
-		o_stw_en,
+		o_timer_en,
 		o_sec_clk,
 		o_min_clk,
 		o_hour_clk,
 		o_alarm_sec_clk,
 		o_alarm_min_clk,
 		o_alarm_hour_clk,
-		o_stw_sec_clk,
-		o_stw_min_clk,
-		o_stw_hour_clk,
-		/*o_timer_sec_clk,
+		o_timer_sec_clk,
 		o_timer_min_clk,
-		o_timer_hour_clk*/
+		o_timer_hour_clk,
 		i_max_hit_sec,
 		i_max_hit_min,
 		i_max_hit_hour,
@@ -275,55 +272,52 @@ module	controller(
 		i_sw1,
 		i_sw2,
 		i_sw3,
-		i_sw4, //i_sw5(reset),
+		i_sw4,
+		i_sw5,
 		clk,
 		rst_n);
 
-output	[1:0]	o_mode			; // 000 clk, 001 setup, 010 alarm, 011 stopwatch, 100 timer [2:0]
-output	[1:0]	o_position		; // 00 sec, 01 min, 10 hour
+output	[1:0]	o_mode			;
+output	[1:0]	o_position		;
 output		o_alarm_en		;
-output		o_stw_en		;
+output		o_timer_en		;
 output		o_sec_clk		;
 output		o_min_clk		;
 output		o_hour_clk		;
 output		o_alarm_sec_clk		;
 output		o_alarm_min_clk		;
 output		o_alarm_hour_clk	;
-output		o_stw_sec_clk		;
-output		o_stw_min_clk		;
-output		o_stw_hour_clk		;
-/*output	o_timer_sec_clk		;
+output		o_timer_sec_clk		;
 output		o_timer_min_clk		;
-output		o_timer_hour_clk	;	*/
+output		o_timer_hour_clk	;
 
 input		i_max_hit_sec		;
 input		i_max_hit_min		;
 input		i_max_hit_hour		;
-input		i_max_hit_stw_sec	;
-input		i_max_hit_stw_min	;
-input		i_max_hit_stw_hour	;
+input		i_max_hit_timer_sec	;
+input		i_max_hit_timer_min	;
+input		i_max_hit_timer_hour	;
 
 input		i_sw0			;
 input		i_sw1			;
 input		i_sw2			;
 input		i_sw3			;
 input		i_sw4			;
-//input 	i_sw5			;
+input		i_sw5			;
 
 input		clk			;
 input		rst_n			;
 
-parameter	MODE_CLOCK	= 2'b00	; //3'b000
-parameter	MODE_SETUP	= 2'b01	; //3'b001
-parameter	MODE_ALARM	= 2'b10	; //3'b010
-parameter 	MODE_STOPWATCH 	= 2'b11 ; //3'b011
-//MODE_TIMER = 3'b100  
+parameter	MODE_CLOCK	= 2'b00	;
+parameter	MODE_SETUP	= 2'b01	;
+parameter	MODE_ALARM	= 2'b10	;
+parameter 	MODE_TIMER 	= 2'b11 ; //new
 parameter	POS_SEC		= 2'b00	;
 parameter	POS_MIN		= 2'b01	;
 parameter	POS_HOUR	= 2'b10	;
 parameter 	START 		= 1'b0;
 parameter 	STOP 		= 1'b1;
-//parameter 	RESET 		= 1'b0; //x
+parameter 	RESET 		= 1'b0; //x
 
 
 //nco for debounce
@@ -364,13 +358,13 @@ debounce	u4_debounce(
 		.i_sw		( i_sw4		),
 		.clk		( clk_100hz	));
 	
-/*wire		sw5			;
+wire		sw5			;
 debounce	u5_debounce(
 		.o_sw		( sw5		),
 		.i_sw		( i_sw5		),
-		.clk		( clk_100hz	)); */
+		.clk		( clk_100hz	));
 
-reg	[1:0]	o_mode			; 
+reg	[1:0]	o_mode			;
 always @(posedge sw0 or negedge rst_n) begin
 	if(rst_n == 1'b0) begin
 		o_mode <= MODE_CLOCK;
@@ -378,20 +372,6 @@ always @(posedge sw0 or negedge rst_n) begin
 		o_mode <= o_mode + 1'b1;
 	end
 end
-
-/*
-reg	[2:0]	o_mode			;
-always @(posedge sw0 or negedge rst_n) begin
-	if(rst_n == 1'b0) begin
-		o_mode <= MODE CLOCK;
-	end else begin
-		if(o_mode>= MODE TIMER) begin
-			o_mode <= POS_CLOCK;
-		end else begin
-			o_mode <= o_mode + 1'b1;
-		end
-	end
-end */ //add MODE TIMER (delete upper)
 
 reg	[1:0]	o_position		;
 always @(posedge sw1 or negedge rst_n) begin
@@ -406,16 +386,14 @@ always @(posedge sw1 or negedge rst_n) begin
 	end
 end
 
-//
-reg		o_stw_en		;
+reg		o_timer_en		;
 always @(posedge sw4 or negedge rst_n) begin
 	if(rst_n == 1'b0) begin
-		o_stw_en <= STOP  ; 
+		o_timer_en <= STOP  ;
 	end else begin
-		o_stw_en <= START ;
+		o_timer_en <= START ;
 	end
 end
-//?
 
 
 reg		o_alarm_en		;
@@ -441,12 +419,9 @@ reg		o_hour_clk		;
 reg		o_alarm_sec_clk		;
 reg		o_alarm_min_clk		;
 reg		o_alarm_hour_clk	;
-reg		o_stw_sec_clk		;
-reg		o_stw_min_clk		;
-reg		o_stw_hour_clk		;
-/*reg		o_timer_sec_clk		;
+reg		o_timer_sec_clk		;
 reg		o_timer_min_clk		;
-reg		o_timer_hour_clk	; */
+reg		o_timer_hour_clk	;
 
 
 always @(*) begin
@@ -458,13 +433,9 @@ always @(*) begin
 			o_alarm_sec_clk = 1'b0			;
 			o_alarm_min_clk = 1'b0			;
 			o_alarm_hour_clk = 1'b0			;
-			o_stw_sec_clk	 = 1'b0			;
-			o_stw_min_clk	 = 1'b0			;
-			o_stw_hour_clk 	 = 1'b0			;
-			/*o_timer_sec_clk= 1'b0			;
+			o_timer_sec_clk	 = 1'b0			;
 			o_timer_min_clk	 = 1'b0			;
-			o_timer_hour_clk = 1'b0			; */
-
+			o_timer_hour_clk = 1'b0			;
 		end
 		MODE_SETUP : begin
 			case(o_position)
@@ -475,12 +446,9 @@ always @(*) begin
 					o_alarm_sec_clk = 1'b0	;
 					o_alarm_min_clk = 1'b0	;
 					o_alarm_hour_clk = 1'b0	;
-					o_stw_sec_clk	 = 1'b0	;
-					o_stw_min_clk	 = 1'b0	;
-					o_stw_hour_clk = 1'b0 ;
-					/*o_timer_sec_clk= 1'b0	;
+					o_timer_sec_clk	 = 1'b0	;
 					o_timer_min_clk	 = 1'b0	;
-					o_timer_hour_clk = 1'b0	; */
+					o_timer_hour_clk = 1'b0 ;
 				end
 				POS_MIN : begin
 					o_sec_clk = 1'b0	;
@@ -489,12 +457,9 @@ always @(*) begin
 					o_alarm_sec_clk = 1'b0	;
 					o_alarm_min_clk = 1'b0	;
 					o_alarm_hour_clk = 1'b0	;
-					o_stw_sec_clk	 = 1'b0	;
-					o_stw_min_clk	 = 1'b0 ;
-					o_stw_hour_clk = 1'b0 ;
-					/*o_timer_sec_clk= 1'b0	;
-					o_timer_min_clk	 = 1'b0	;
-					o_timer_hour_clk = 1'b0	; */
+					o_timer_sec_clk	 = 1'b0	;
+					o_timer_min_clk	 = 1'b0 ;
+					o_timer_hour_clk = 1'b0 ;
 				end
 				POS_HOUR : begin
 					o_sec_clk = 1'b0	;
@@ -503,12 +468,9 @@ always @(*) begin
 					o_alarm_sec_clk = 1'b0	;
 					o_alarm_min_clk = 1'b0	;
 					o_alarm_hour_clk = 1'b0	;
-					o_stw_sec_clk	 = 1'b0	;
-					o_stw_min_clk	 = 1'b0 ;
-					o_stw_hour_clk 	 = 1'b0 ;
-					/*o_timer_sec_clk= 1'b0	;
-					o_timer_min_clk	 = 1'b0	;
-					o_timer_hour_clk = 1'b0	; */
+					o_timer_sec_clk	 = 1'b0	;
+					o_timer_min_clk	 = 1'b0 ;
+					o_timer_hour_clk = 1'b0 ;
 				end
 			endcase
 		end
@@ -521,12 +483,9 @@ always @(*) begin
 					o_alarm_sec_clk = ~sw2		;
 					o_alarm_min_clk = 1'b0		;
 					o_alarm_hour_clk = 1'b0		;
-					o_stw_sec_clk	 = 1'b0		;
-					o_stw_min_clk	 = 1'b0		;
-					o_stw_hour_clk = 1'b0		;
-					/*o_timer_sec_clk= 1'b0	;
-					o_timer_min_clk	 = 1'b0	;
-					o_timer_hour_clk = 1'b0	; */
+					o_timer_sec_clk	 = 1'b0		;
+					o_timer_min_clk	 = 1'b0		;
+					o_timer_hour_clk = 1'b0		;
 				end
 				POS_MIN : begin
 					o_sec_clk = clk_1hz		;
@@ -535,12 +494,9 @@ always @(*) begin
 					o_alarm_sec_clk = 1'b0		;
 					o_alarm_min_clk = ~sw2		;
 					o_alarm_hour_clk = 1'b0		;
-					o_stw_sec_clk	 = 1'b0		;
-					o_stw_min_clk	 = 1'b0		;
-					o_stw_hour_clk 	 = 1'b0 	;
-					/*o_timer_sec_clk= 1'b0	;
-					o_timer_min_clk	 = 1'b0	;
-					o_timer_hour_clk = 1'b0	; */
+					o_timer_sec_clk	 = 1'b0		;
+					o_timer_min_clk	 = 1'b0		;
+					o_timer_hour_clk = 1'b0 	;
 				end
 				POS_HOUR : begin
 					o_sec_clk = clk_1hz		;
@@ -549,31 +505,14 @@ always @(*) begin
 					o_alarm_sec_clk = 1'b0		;
 					o_alarm_min_clk = 1'b0		;
 					o_alarm_hour_clk = ~sw2		;
-					o_stw_sec_clk	 = 1'b0		;
-					o_stw_min_clk	 = 1'b0		;
-					o_stw_hour_clk = 1'b0		;
-					/*o_timer_sec_clk= 1'b0	;
-					o_timer_min_clk	 = 1'b0	;
-					o_timer_hour_clk = 1'b0	; */
+					o_timer_sec_clk	 = 1'b0		;
+					o_timer_min_clk	 = 1'b0		;
+					o_timer_hour_clk = 1'b0		;
 				end
 			endcase
 		end
-		MODE_STOPWATCH : begin
-		  	case(o_stw_en)
-        			STOP : begin
-		      			o_sec_clk = clk_1hz		;
-					o_min_clk = i_max_hit_sec	;	
-					o_hour_clk = i_max_hit_min	;
-					o_alarm_sec_clk = 1'b0		;
-					o_alarm_min_clk = 1'b0		;
-					o_alarm_hour_clk = 1'b0		; 
-					o_stw_sec_clk	= 1'b0 		;
-					o_stw_min_clk	= 1'b0		;
-					o_stw_hour_clk	= 1'b0		;	// If TIMER STOP , 	
-					/*o_timer_sec_clk= 1'b0	;
-					o_timer_min_clk	 = 1'b0	;
-					o_timer_hour_clk = 1'b0	; */   
-				end
+		MODE_TIMER : begin
+		  	case(o_timer_en)
 		    		START : begin
 		      			o_sec_clk = clk_1hz			;
 					o_min_clk = i_max_hit_sec		;	
@@ -581,17 +520,23 @@ always @(*) begin
 					o_alarm_sec_clk = 1'b0			;
 					o_alarm_min_clk = 1'b0			;
 					o_alarm_hour_clk = 1'b0			;
-					o_stw_sec_clk	 = clk_1hz		;
-					o_stw_min_clk	 = i_max_hit_stw_sec	;
-					o_stw_hour_clk = i_max_hit_stw_min	;
-					/*o_timer_sec_clk= 1'b0	;
-					o_timer_min_clk	 = 1'b0	;
-					o_timer_hour_clk = 1'b0	; */
+					o_timer_sec_clk	 = clk_1hz		;
+					o_timer_min_clk	 = i_max_hit_timer_sec	;
+					o_timer_hour_clk = i_max_hit_timer_min	;
+					end
+        			STOP : begin
+		      			o_sec_clk = clk_1hz		;
+					o_min_clk = i_max_hit_sec	;	
+					o_hour_clk = i_max_hit_min	;
+					o_alarm_sec_clk = 1'b0		;
+					o_alarm_min_clk = 1'b0		;
+					o_alarm_hour_clk = 1'b0		; 
+					//o_timer_sec_clk= 		;
+					//o_timer_min_clk=		;
+					//o_timer_hour_clk=		;	// If TIMER STOP , 	   
 				end
 			endcase
 		end
-	//	MODE_TIMER
-
 		default: begin
 			o_sec_clk = 1'b0		;
 			o_min_clk = 1'b0		;
@@ -599,12 +544,9 @@ always @(*) begin
 			o_alarm_sec_clk = 1'b0		;
 			o_alarm_min_clk = 1'b0		;
 			o_alarm_hour_clk = 1'b0		;
-			o_stw_sec_clk	 = 1'b0		;
-			o_stw_min_clk	 = 1'b0		;
-			o_stw_hour_clk = 1'b0		;	
-			/*o_timer_sec_clk= 1'b0	;
-			o_timer_min_clk	 = 1'b0	;
-			o_timer_hour_clk = 1'b0	; */
+			o_timer_sec_clk	 = 1'b0		;
+			o_timer_min_clk	 = 1'b0		;
+			o_timer_hour_clk = 1'b0		;	
 		end
 	endcase
 end
@@ -621,9 +563,9 @@ module	hrminsec(
 		o_max_hit_sec,
 		o_max_hit_min,
 		o_max_hit_hour,
-		o_max_hit_stw_sec,
-		o_max_hit_stw_min,
-		o_max_hit_stw_hour,
+		o_max_hit_timer_sec,
+		o_max_hit_timer_min,
+		o_max_hit_timer_hour,
 		o_alarm,
 		i_mode,
 		i_position,
@@ -634,22 +576,22 @@ module	hrminsec(
 		i_alarm_min_clk,
 		i_alarm_hour_clk,
 		i_alarm_en,
-		i_stw_sec_clk,
-		i_stw_min_clk,
-		i_stw_hour_clk,
+		i_timer_sec_clk,
+		i_timer_min_clk,
+		i_timer_hour_clk,
 		clk,
 		rst_n);
 
 parameter	MODE_CLOCK	= 2'b00	;
 parameter	MODE_SETUP	= 2'b01	;
 parameter	MODE_ALARM	= 2'b10	;
-parameter 	MODE_STOPWATCH	= 2'b11 ;
+parameter 	MODE_TIMER 	= 2'b11 ;
 parameter	POS_SEC		= 2'b00	;
 parameter	POS_MIN		= 2'b01	;
 parameter	POS_HOUR	= 2'b10	;
 parameter 	START 		= 1'b0;
 parameter 	STOP 		= 1'b1;
-//parameter 	RESET 		= 1'b0; 
+parameter 	RESET 		= 1'b0; 
 
 output	[5:0]	o_sec		;
 output	[5:0]	o_min		;
@@ -660,9 +602,9 @@ output		o_max_hit_sec	;
 output		o_max_hit_min	;
 output		o_max_hit_hour	;
 
-output		o_max_hit_stw_sec;
-output		o_max_hit_stw_min;
-output		o_max_hit_stw_hour;
+output		o_max_hit_timer_sec;
+output		o_max_hit_timer_min;
+output		o_max_hit_timer_hour;
 
 output		o_alarm		;
 
@@ -677,9 +619,9 @@ input		i_alarm_sec_clk	;
 input		i_alarm_min_clk	;
 input		i_alarm_hour_clk;
 
-input		i_stw_sec_clk	;
-input		i_stw_min_clk	;
-input		i_stw_hour_clk;
+input		i_timer_sec_clk	;
+input		i_timer_min_clk	;
+input		i_timer_hour_clk;
 
 input		i_alarm_en	;
 
@@ -743,28 +685,28 @@ hms_cnt		u_hms_cnt_alarm_hour(
 		.rst_n		( rst_n			));
 
 //	MODE TIMER
-wire	[5:0]	stw_sec		;
-hms_cnt		u_hms_stw_sec(
-		.o_hms_cnt	( stw_sec		),
-		.o_max_hit	( o_max_hit_stw_sec	),
+wire	[5:0]	timer_sec		;
+hms_cnt		u_hms_timer_sec(
+		.o_hms_cnt	( timer_sec		),
+		.o_max_hit	( o_max_hit_timer_sec	),
 		.i_max_cnt	( 6'd59			),
-		.clk		( i_stw_sec_clk	),
+		.clk		( i_timer_sec_clk	),
 		.rst_n		( rst_n			));
 
-wire	[5:0]	stw_min		;
-hms_cnt		u_hms_stw_min(
-		.o_hms_cnt	( stw_min		),
-		.o_max_hit	( o_max_hit_stw_min	),
+wire	[5:0]	timer_min		;
+hms_cnt		u_hms_timer_min(
+		.o_hms_cnt	( timer_min		),
+		.o_max_hit	( o_max_hit_timer_min	),
 		.i_max_cnt	( 6'd59			),
-		.clk		( i_stw_min_clk	),
+		.clk		( i_timer_min_clk	),
 		.rst_n		( rst_n			));
 
-wire	[5:0]	stw_hour		;
-hms_cnt		u_hms_stw_hour(
-		.o_hms_cnt	( stw_hour		),
-		.o_max_hit	( o_max_hit_stw_hour	),
+wire	[5:0]	timer_hour		;
+hms_cnt		u_hms_timer_hour(
+		.o_hms_cnt	( timer_hour		),
+		.o_max_hit	( o_max_hit_timer_hour	),
 		.i_max_cnt	( 6'd23			),
-		.clk		( i_stw_hour_clk	),
+		.clk		( i_timer_hour_clk	),
 		.rst_n		( rst_n			));
 
  
@@ -789,10 +731,10 @@ always @ (*) begin
 			o_min	= alarm_min;
 			o_hour	= alarm_hour;
 		end
-		MODE_STOPWATCH:	begin
-			o_sec	= stw_sec;s
-			o_min	= stw_min;
-			o_hour	= stw_hour;
+		MODE_TIMER:	begin
+			o_sec	= timer_sec;
+			o_min	= timer_min;
+			o_hour	= timer_hour;
 		end
 
 	endcase
@@ -906,7 +848,7 @@ module	top_project(
 		i_sw2,
 		i_sw3,
 		i_sw4,
-		//i_sw5,
+		i_sw5,
 		clk,
 		rst_n);
 
@@ -920,7 +862,7 @@ input		i_sw1		;
 input		i_sw2		;
 input		i_sw3		;
 input		i_sw4		;
-//input		i_sw5		;
+input		i_sw5		;
 input		clk		;
 input		rst_n		;
 
@@ -941,9 +883,9 @@ wire		timer_en	;
 wire		alarm_hour_clk	;
 wire		alarm_min_clk	;
 wire		alarm_sec_clk	;
-wire		stw_hour_clk	;
-wire		stw_min_clk	;
-wire		stw_sec_clk	;
+wire		timer_hour_clk	;
+wire		timer_min_clk	;
+wire		timer_sec_clk	;
 
 
 
@@ -953,21 +895,21 @@ controller		u_ctrl(
 			.i_sw2			(i_sw2		),
 			.i_sw3			(i_sw3		),
 			.i_sw4			(i_sw4		),
-			//.i_sw5		(i_sw5		),
+			.i_sw5			(i_sw5		),
 			.clk			(clk		),
 			.i_max_hit_hour		(controller_5	),
 			.i_max_hit_min		(controller_3	),
 			.i_max_hit_sec		(controller_4	),
-			.i_max_hit_stw_hour	(controller_7	),
-			.i_max_hit_stw_min	(controller_8	),
-			.i_max_hit_stw_sec	(controller_9	),
+			.i_max_hit_timer_hour	(controller_7	),
+			.i_max_hit_timer_min	(controller_8	),
+			.i_max_hit_timer_sec	(controller_9	),
 			.o_mode			(mode		),
 			.o_position		(position	),
-			.o_stw_sec_clk		(stw_sec_clk	),
-			.o_stw_min_clk		(stw_min_clk	),
-			.o_stw_hour_clk		(stw_hour_clk	),
+			.o_timer_sec_clk	(timer_sec_clk	),
+			.o_timer_min_clk	(timer_min_clk	),
+			.o_timer_hour_clk	(timer_hour_clk	),
 			.o_alarm_en		(alarm_en	),
-			.o_stw_en		(stw_en	),
+			.o_timer_en		(timer_en	),
 			.o_alarm_hour_clk	(alarm_hour_clk	),
 			.o_alarm_min_clk	(alarm_min_clk	),
 			.o_alarm_sec_clk	(alarm_sec_clk	),
@@ -981,7 +923,7 @@ wire	[5:0]	hrminsec_2	;
 wire	[5:0]	hrminsec_3	;
 
 wire		alarm		;
-wire		stw		;
+wire		timer		;
 
 
 hrminsec		u_hrminsec(
@@ -995,9 +937,9 @@ hrminsec		u_hrminsec(
 			.i_alarm_hour_clk	(alarm_hour_clk	),
 			.i_alarm_min_clk	(alarm_min_clk	),
 			.i_alarm_sec_clk	(alarm_sec_clk	),
-			.i_stw_sec_clk		(stw_sec_clk	),
-			.i_stw_min_clk		(stw_min_clk	),
-			.i_stw_hour_clk		(stw_hour_clk	),
+			.i_timer_sec_clk	(timer_sec_clk	),
+			.i_timer_min_clk	(timer_min_clk	),
+			.i_timer_hour_clk	(timer_hour_clk	),
 			.o_alarm		(alarm		),
 			.o_hour			(hrminsec_3	),
 			.o_min			(hrminsec_2	),
@@ -1005,9 +947,9 @@ hrminsec		u_hrminsec(
 			.o_max_hit_hour		(controller_5	),
 			.o_max_hit_min		(controller_3	),
 			.o_max_hit_sec		(controller_4	),
-			.o_max_hit_stw_hour	(controller_7	),
-			.o_max_hit_stw_min	(controller_8	),
-			.o_max_hit_stw_sec	(controller_9	),
+			.o_max_hit_timer_hour	(controller_7	),
+			.o_max_hit_timer_min	(controller_8	),
+			.o_max_hit_timer_sec	(controller_9	),
 			.rst_n			(rst_n		));
 
 buzz			u_buzz(
