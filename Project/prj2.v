@@ -104,7 +104,8 @@ module	led_disp(
 		o_seg_dp,
 		o_seg_enb,
 		i_six_digit_seg,
-		i_six_dp,
+		i_mode,
+		i_position,
 		clk,
 		rst_n);
 
@@ -113,7 +114,8 @@ output		o_seg_dp		;
 output	[6:0]	o_seg			;
 
 input	[41:0]	i_six_digit_seg		;
-input	[5:0]	i_six_dp		;
+input	[1:0]	i_mode			;
+input	[1:0] 	i_position		;
 input		clk			;
 input		rst_n			;
 
@@ -125,6 +127,7 @@ nco		u_nco(
 		.clk		( clk		),
 		.rst_n		( rst_n		));
 
+//blink
 nco		u1_nco(
 		.o_gen_clk	( clk_blink	),
 		.i_nco_num	( 32'd5000000   ),
@@ -252,9 +255,7 @@ end
 
 reg		o_seg_dp		;
 reg	[5:0]	i_six_dp		;
-
-
-always @(cnt_common_node) begin
+always @(cnt_common_node, i_six_dp) begin
 	case (cnt_common_node)
 		4'd0:	o_seg_dp = i_six_dp[0];
 		4'd1:	o_seg_dp = i_six_dp[1];
@@ -296,7 +297,7 @@ always @(cnt_common_node) begin
 	endcase
 end
 
-always @(cnt_common_node) begin
+//always @(cnt_common_node) begin
 	
 
 endmodule
@@ -491,7 +492,11 @@ always @(posedge sw0 or negedge rst_n) begin
 	if(rst_n == 1'b0) begin
 		o_mode <= MODE_CLOCK;
 	end else begin
-		o_mode <= STOP;
+		if (o_mode >= MODE_STOPWATCH) begin
+			o_mode <= MODE_CLOCK;
+		end else begin
+			o_mode <= o_mode + 1'b1;
+		end
 	end
 end
 
@@ -524,18 +529,19 @@ end
 
 
 reg	o_stw_en		;
+
 always @(posedge sw4) begin
 	o_stw_en <= ~o_stw_en	;
 end
 // stopwatch 'stop' & 'start'
 
-reg	o_stw_rst		;
+/*reg	o_stw_rst		;
 always @(posedge sw5) begin	
-	o_stw_rst <= o_stw_rst	;
-end
+	o_stw_rst <= initial	;
+end*/
 // stopwatch 'reset'
 
-reg		o_alarm_en		;
+reg		o_alarm_en	;
 always @(posedge sw3 or negedge rst_n) begin
 	if(rst_n == 1'b0) begin
 		o_alarm_en <= 1'b0;
@@ -676,21 +682,21 @@ always @(*) begin
 			endcase
 		end
 		MODE_STOPWATCH : begin
-		  	if(o_stw_en) begin
-				if(o_stw_rst) begin
+		  	if(o_stw_en == 1'b1) begin
+				/*if(o_stw_rst) begin
 					o_sec_clk = clk_1hz			;
 					o_min_clk = i_max_hit_sec		;	
 					o_hour_clk = i_max_hit_min		;
 					o_alarm_sec_clk = 1'b0			;
 					o_alarm_min_clk = 1'b0			;
 					o_alarm_hour_clk = 1'b0			;
-					o_stw_sec_clk	 = 			; //
-					o_stw_min_clk	 = 			; //
-					o_stw_hour_clk =			; //
+					o_stw_sec_clk	 = 1'b0			; 
+					o_stw_min_clk	 = 1'b0			; //
+					o_stw_hour_clk 	 = 1'b0			; //
 					/*o_timer_sec_clk= 1'b0	;
 					o_timer_min_clk	 = 1'b0	;
 					o_timer_hour_clk = 1'b0	; */
-				end else if begin
+				//end if else begin
 		      			o_sec_clk = clk_1hz			;
 					o_min_clk = i_max_hit_sec		;	
 					o_hour_clk = i_max_hit_min		;
@@ -704,6 +710,7 @@ always @(*) begin
 					o_timer_min_clk	 = 1'b0	;
 					o_timer_hour_clk = 1'b0	; */
 				end
+			//end
 		end
 	//	MODE_TIMER
 
@@ -755,16 +762,6 @@ module	hrminsec(
 		clk,
 		rst_n);
 
-parameter	MODE_CLOCK	= 2'b00	;
-parameter	MODE_SETUP	= 2'b01	;
-parameter	MODE_ALARM	= 2'b10	;
-parameter 	MODE_STOPWATCH	= 2'b11 ;
-parameter	POS_SEC		= 2'b00	;
-parameter	POS_MIN		= 2'b01	;
-parameter	POS_HOUR	= 2'b10	;
-parameter 	START 		= 1'b0;
-parameter 	STOP 		= 1'b1;
-//parameter 	RESET 		= 1'b0; 
 
 output	[5:0]	o_sec		;
 output	[5:0]	o_min		;
@@ -800,6 +797,16 @@ input		i_alarm_en	;
 
 input		clk		;
 input		rst_n		;
+
+parameter	MODE_CLOCK	= 2'b00	; //3'b000
+parameter	MODE_SETUP	= 2'b01	; //3'b001
+parameter	MODE_ALARM	= 2'b10	; //3'b010
+parameter 	MODE_STOPWATCH 	= 2'b11 ; //3'b011
+//MODE_TIMER = 3'b100  
+parameter	POS_SEC		= 2'b00	;
+parameter	POS_MIN		= 2'b01	;
+parameter	POS_HOUR	= 2'b10	;
+//parameter 	RESET 		= 1'b0	;
 
 
 
