@@ -566,6 +566,7 @@ reg	o_stw_en		;
 
 always @(posedge sw4) begin
 	o_stw_en <= ~o_stw_en	;
+	o_stw_cnt_rst <= 1'b1	;
 end
 // stopwatch 'stop' & 'start'
 
