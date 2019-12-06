@@ -154,9 +154,9 @@ end
 
 always @(posedge clk_blink or negedge rst_n) begin
 	if(rst_n ==1'b0) begin
-		cnt_hr = 0;
-		cnt_min= 0;
-		cnt_sec= 0;
+		cnt_hr = 1'b0;
+		cnt_min= 1'b0;
+		cnt_sec= 1'b0;
 	end else begin
 		cnt_hr <= cnt_hr + 1'b1; // count hr  repeat (blink)
 		cnt_min<= cnt_min+ 1'b1; // count min repeat (blink)
@@ -382,9 +382,9 @@ module	controller(
 		o_stw_min_clk,
 		o_stw_hour_clk,
 		o_wt_change_position, // worldtime position
-		/*o_timer_sec_clk,
+		o_timer_sec_clk,
 		o_timer_min_clk,
-		o_timer_hour_clk*/
+		o_timer_hour_clk
 		i_max_hit_sec,
 		i_max_hit_min,
 		i_max_hit_hour,
@@ -415,9 +415,9 @@ output		o_stw_sec_clk		;
 output		o_stw_min_clk		;
 output		o_stw_hour_clk		;
 output	[1:0]	o_wt_chage_position	;	// wt
-/*output	o_timer_sec_clk		;
+output	o_timer_sec_clk		;
 output		o_timer_min_clk		;
-output		o_timer_hour_clk	;	*/
+output		o_timer_hour_clk	;	
 
 input		i_max_hit_sec		;
 input		i_max_hit_min		;

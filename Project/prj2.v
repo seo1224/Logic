@@ -382,9 +382,9 @@ module	controller(
 		o_stw_min_clk,
 		o_stw_hour_clk,
 		o_wt_change_position, // worldtime position
-		/*o_timer_sec_clk,
+		o_timer_sec_clk,
 		o_timer_min_clk,
-		o_timer_hour_clk*/
+		o_timer_hour_clk
 		i_max_hit_sec,
 		i_max_hit_min,
 		i_max_hit_hour,
@@ -415,9 +415,9 @@ output		o_stw_sec_clk		;
 output		o_stw_min_clk		;
 output		o_stw_hour_clk		;
 output	[1:0]	o_wt_chage_position	;	// wt
-/*output	o_timer_sec_clk		;
+output	o_timer_sec_clk		;
 output		o_timer_min_clk		;
-output		o_timer_hour_clk	;	*/
+output		o_timer_hour_clk	;	
 
 input		i_max_hit_sec		;
 input		i_max_hit_min		;
@@ -442,7 +442,7 @@ parameter	MODE_SETUP	= 3'b101	; //3'b001
 parameter	MODE_ALARM	= 3'b110	; //3'b010
 parameter 	MODE_STOPWATCH 	= 3'b111 	; //3'b011
 parameter	MODE_WORLDTIME	= 3'b100	;
-//MODE_TIMER = 3'b100  
+parameter	MODE_TIMER 	= 3'b101	;  
 parameter	POS_SEC		= 2'b00	;
 parameter	POS_MIN		= 2'b01	;
 parameter	POS_HOUR	= 2'b10	;
@@ -592,9 +592,9 @@ reg		o_alarm_hour_clk	;
 reg		o_stw_sec_clk		;
 reg		o_stw_min_clk		;
 reg		o_stw_hour_clk		;
-/*reg		o_timer_sec_clk		;
+reg		o_timer_sec_clk		;
 reg		o_timer_min_clk		;
-reg		o_timer_hour_clk	; */
+reg		o_timer_hour_clk	; 	
 
 
 always @(*) begin
